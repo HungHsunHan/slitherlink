@@ -2,11 +2,11 @@
 
 在固定 7×7 的棋盤上畫出一條不分岔的封閉迴路。簡單、中等、困難各有 30 關，可以直接選關。遊戲在瀏覽器執行，每台裝置的進度分別存在該裝置的瀏覽器。
 
-## Cloudflare 雲端版
+## Cloudflare 公開版
 
-連上家中 Wi-Fi 後開啟 [數迴遊戲](https://slitherlink.b04605078123.workers.dev/)。雲端版由 Cloudflare Workers Free 提供，不需要購買網域或綁定付款方式。Mac 關機時仍可玩。
+任何人都可以免費開啟 [數迴遊戲](https://slitherlink.b04605078123.workers.dev/)。遊戲由 Cloudflare 直接提供 `public/` 的靜態檔案，不需要登入、綁定付款方式或讓 Mac 開機。靜態檔案請求不占用 Workers Free 的每日程式執行額度。 [Cloudflare 靜態資源計費](https://developers.cloudflare.com/workers/static-assets/billing-and-limitations/#billing)
 
-Cloudflare 會檢查每個請求的來源。遊戲只接受 `HOME_NETWORKS` 中的家中公網 IPv4 或 IPv6 網段，其他來源會收到 HTTP 403。若已連上家中 Wi-Fi 仍遇到 403，先檢查裝置是否透過 VPN 或代理連線，再確認電信商是否更換了對外 IP。遊戲進度依瀏覽器和網址各自保存。
+進度與最佳時間儲存在各自的瀏覽器。遊戲檔案包含題目與解答，任何訪客都可以讀取。
 
 ### CI/CD
 
@@ -17,9 +17,9 @@ Cloudflare 會檢查每個請求的來源。遊戲只接受 `HOME_NETWORKS` 中�
 | Build command | `npm test` |
 | Deploy command | `npm exec --yes --package=wrangler@4.166.0 -- wrangler deploy` |
 
-每次推送到 `main` 都會先執行測試，通過才會部署。可到 Cloudflare 的 `slitherlink` Worker 的 **Deployments** 查看建置紀錄，也可在 GitHub 的提交頁面查看檢查結果。既有的 `HOME_NETWORKS` Secret 會隨後續部署保留。
+每次推送到 `main` 都會先執行測試，通過才會部署。可到 Cloudflare 的 `slitherlink` Worker 的 **Deployments** 查看建置紀錄，也可在 GitHub 的提交頁面查看檢查結果。
 
-### 手動部署或更新 IP
+### 手動部署
 
 先用 Wrangler 登入具備部署權限的 Cloudflare 帳戶，再測試並部署。
 
@@ -27,12 +27,6 @@ Cloudflare 會檢查每個請求的來源。遊戲只接受 `HOME_NETWORKS` 中�
 npm exec --yes --package=wrangler@4.166.0 -- wrangler login --scopes account:read user:read workers:write workers_scripts:write
 npm test
 npm exec --yes --package=wrangler@4.166.0 -- wrangler deploy
-```
-
-若家庭網路的公網 IP 變了，到 Cloudflare 的 `slitherlink` Worker 設定更新 Secret `HOME_NETWORKS`，也可在已部署的 Worker 上執行下列指令。輸入值是 JSON 陣列，格式如 `["198.51.100.23", "2001:db8:1234:5678::/64"]`。請換成家中的實際公網 IPv4 和 IPv6 網段。可在家中 Wi-Fi 從 [Cloudflare 連線診斷](https://www.cloudflare.com/cdn-cgi/trace) 查看目前裝置的公網位址，IPv6 網段以路由器設定為準。實際位址請保存在 Cloudflare Secret。
-
-```sh
-npm exec --yes --package=wrangler@4.166.0 -- wrangler secret put HOME_NETWORKS
 ```
 
 ## 手動啟動家庭 Wi-Fi 版
