@@ -4,20 +4,20 @@
 
 ## Cloudflare 雲端版
 
-部署完成後，連上家中 Wi-Fi 開啟 [數迴遊戲](https://slitherlink.b04605078123.workers.dev/)。雲端版由 Cloudflare Workers Free 提供，不需要購買網域或綁定付款方式。Mac 關機時仍可玩。
+連上家中 Wi-Fi 後開啟 [數迴遊戲](https://slitherlink.b04605078123.workers.dev/)。雲端版由 Cloudflare Workers Free 提供，不需要購買網域或綁定付款方式。Mac 關機時仍可玩。
 
 Cloudflare 會檢查每個請求的來源。遊戲只接受 `HOME_NETWORKS` 中的家中公網 IPv4 或 IPv6 網段，其他來源會收到 HTTP 403。若已連上家中 Wi-Fi 仍遇到 403，先檢查裝置是否透過 VPN 或代理連線，再確認電信商是否更換了對外 IP。遊戲進度依瀏覽器和網址各自保存。
 
 ### CI/CD
 
-使用 Cloudflare Workers Builds 連接 [GitHub 私人儲存庫](https://github.com/HungHsunHan/slitherlink)。生產分支設為 `main`，專案根目錄保留預設值，取消其他分支的預覽建置。
+[GitHub 私人儲存庫](https://github.com/HungHsunHan/slitherlink) 已連接 Cloudflare Workers Builds。正式部署分支是 `main`，專案根目錄是 `/`，預覽建置已關閉。
 
 | 設定 | 值 |
 | --- | --- |
 | Build command | `npm test` |
 | Deploy command | `npm exec --yes --package=wrangler@4.166.0 -- wrangler deploy` |
 
-連接後，每次推送到 `main` 都會先執行測試，通過才會部署。可到 Cloudflare 的 `slitherlink` Worker 的 **Deployments** 查看建置紀錄。既有的 `HOME_NETWORKS` Secret 會隨後續部署保留。
+每次推送到 `main` 都會先執行測試，通過才會部署。可到 Cloudflare 的 `slitherlink` Worker 的 **Deployments** 查看建置紀錄，也可在 GitHub 的提交頁面查看檢查結果。既有的 `HOME_NETWORKS` Secret 會隨後續部署保留。
 
 ### 手動部署或更新 IP
 
