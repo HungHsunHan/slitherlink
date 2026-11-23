@@ -6,6 +6,15 @@
 
 這是粉絲自製的數迴遊戲。簡單、中等、困難各有 30 道原創關卡，每關都能直接選，也可以重玩挑戰自己的最快紀錄。
 
+## 遊戲畫面
+
+[![桌面版數迴棋盤，顯示作答中的迴路、關卡與工具](docs/demo/desktop.png)](https://slitherlink.b04605078123.workers.dev/)
+
+<p align="center">
+  <img src="docs/demo/mobile.png" alt="手機版直向畫面，棋盤與作答工具上下排列" width="34%">
+  <img src="docs/demo/result.png" alt="解題成功畫面，顯示完成時間與封閉迴路" width="52%">
+</p>
+
 ## Cloudflare 部署
 
 遊戲由 Cloudflare 直接提供 `public/` 的靜態檔案。靜態檔案請求不占用 Workers Free 的每日程式執行額度。 [Cloudflare 靜態資源計費](https://developers.cloudflare.com/workers/static-assets/billing-and-limitations/#billing)
