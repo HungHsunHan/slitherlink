@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { changeMark, createAttempt, elapsedAt, formatTime, undoMark } from '../public/session.mjs';
+import { changeMark, completeAttempt, createAttempt, elapsedAt, formatTime, undoMark } from '../public/session.mjs';
 
 test('drawing the same mark again clears the edge', () => {
   const attempt = createAttempt();
@@ -40,4 +40,24 @@ test('elapsed time includes only the current running interval plus the saved tim
 test('time is displayed in minutes and seconds, including after an hour', () => {
   assert.equal(formatTime(59999), '00:59');
   assert.equal(formatTime(3601000), '1:00:01');
+});
+
+test('the first completion saves the actual elapsed time as the best time', () => {
+  const attempt = createAttempt();
+  attempt.elapsedMs = 5630;
+
+  completeAttempt(attempt);
+
+  assert.equal(attempt.phase, 'solved');
+  assert.equal(attempt.bestMs, 5630);
+});
+
+test('a slower completion retains its actual time and the faster personal best', () => {
+  const attempt = createAttempt(2050);
+  attempt.elapsedMs = 3380;
+
+  completeAttempt(attempt);
+
+  assert.equal(formatTime(attempt.elapsedMs), '00:03');
+  assert.equal(attempt.bestMs, 2050);
 });

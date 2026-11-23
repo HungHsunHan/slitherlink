@@ -49,6 +49,7 @@
           </div>
           <span id="best-time" class="best-time" hidden></span>
           <span class="pointer-hint">右鍵標記空邊</span>
+          <button type="button" id="open-result" class="result-link" hidden>查看完成結果</button>
         </div>
         <p id="board-instructions" class="visually-hidden">
           棋盤邊可用方向鍵移動、Enter 或空白鍵套用工具、X 鍵切換空邊標記。題目數字另列於棋盤後的表格。
@@ -115,6 +116,26 @@
           <button value="confirm" class="dialog-primary" id="confirm-action"></button>
         </div>
       </form>
+    </dialog>
+
+    <dialog id="result-dialog" aria-labelledby="result-title" aria-describedby="result-level result-badge">
+      <div class="result-heading">
+        <div>
+          <h2 id="result-title">解題成功！</h2>
+          <p id="result-level" class="result-level"></p>
+        </div>
+        <div id="result-badge" class="result-badge">
+          <span class="result-badge-label"><span class="icon icon-clock" aria-hidden="true"></span>完成時間</span>
+          <strong id="result-time"></strong>
+        </div>
+      </div>
+      <div id="result-board" class="board-frame result-board" role="img" aria-label="已完成的數迴迴路"></div>
+      <form method="dialog" class="result-actions">
+        <button class="dialog-primary" autofocus>返回棋盤</button>
+      </form>
+      <div class="result-confetti" aria-hidden="true">
+        <span></span><span></span><span></span><span></span><span></span><span></span>
+      </div>
     </dialog>
   </body>
 </html>

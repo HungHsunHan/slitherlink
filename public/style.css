@@ -315,6 +315,18 @@ h1 span { color: #689477; }
 .pointer-hint { color: #536b62; }
 .best-time:not([hidden]) + .pointer-hint { display: none; }
 
+.result-link {
+  min-height: 42px;
+  padding: 3px 9px;
+  border: 1px solid #b1c3a7;
+  border-radius: 8px;
+  background: #e9eedb;
+  color: #24563e;
+  font-weight: 650;
+}
+
+.result-link:hover { background: #dce9cd; }
+
 .controls {
   display: flex;
   flex-direction: column;
@@ -551,6 +563,144 @@ dialog button {
 
 dialog .dialog-primary { border-color: #254f3c; background: #28573f; color: #fffdf1; }
 dialog button:focus-visible { outline-color: #397557; }
+
+#result-dialog {
+  width: min(470px, 100% - 24px);
+  padding: clamp(15px, 4vw, 25px);
+  border-color: #597e76;
+  border-radius: 22px;
+  background: linear-gradient(145deg, #214d52, var(--navy) 70%);
+  color: var(--white);
+  overscroll-behavior: contain;
+}
+
+.result-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.result-heading h2 {
+  margin: 0 0 3px;
+  color: var(--mint);
+  font-size: clamp(1.3rem, 6.4vw, 2.14rem);
+  line-height: 1.2;
+}
+
+.result-level {
+  margin: 0;
+  color: #d3e2dc;
+  line-height: 1.3;
+  font-size: 0.88rem;
+  font-weight: 650;
+}
+
+.result-badge {
+  display: grid;
+  flex: none;
+  justify-items: center;
+  gap: 5px;
+  padding: 8px 12px 9px;
+  border: 1px solid #a6c696;
+  border-radius: 12px;
+  background: var(--mint);
+  color: #214635;
+}
+
+.result-badge-label {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.875rem;
+  line-height: 1;
+  font-weight: 650;
+}
+
+#result-time {
+  font: 750 clamp(1.18rem, 4.8vw, 1.65rem) / 1 ui-monospace, "SF Mono", Menlo, monospace;
+  font-variant-numeric: tabular-nums;
+}
+
+.result-board {
+  width: min(100%, max(144px, calc(100vh - 174px)));
+  width: min(100%, max(144px, calc(100dvh - 174px)));
+  margin-inline: auto;
+  padding: clamp(13px, 4vw, 24px);
+  border-color: #cfdfb5;
+  border-radius: 12px;
+  box-shadow: 0 9px 28px #06182454;
+  container-type: inline-size;
+  color: var(--ink);
+  pointer-events: none;
+}
+
+.result-board .clue { font-size: clamp(0.72rem, 7.3cqw, 2rem); }
+.result-board .dot { width: clamp(3px, 1.55cqw, 7px); }
+.result-board .edge-h[data-mark="line"]::before { height: clamp(3px, 1.5cqw, 6px); }
+.result-board .edge-v[data-mark="line"]::before { width: clamp(3px, 1.5cqw, 6px); }
+
+.result-actions {
+  display: flex;
+  justify-content: center;
+  margin-top: 15px;
+}
+
+.result-actions .dialog-primary {
+  min-width: 126px;
+  border-color: #789788;
+  background: #285548;
+}
+
+.result-actions .dialog-primary:hover { background: #366759; }
+.result-actions .dialog-primary:focus-visible { outline-color: var(--focus); }
+
+.result-confetti {
+  display: none;
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+#result-dialog[data-celebrate] .result-confetti { display: block; }
+
+.result-confetti span {
+  position: absolute;
+  top: var(--top);
+  left: var(--left);
+  width: 5px;
+  height: 11px;
+  border-radius: 2px;
+  background: var(--confetti-color, var(--mint));
+  transform: rotate(var(--angle));
+  animation: result-confetti 950ms ease-out both;
+}
+
+.result-confetti span:nth-child(1) { --top: 11%; --left: 3%; --angle: -28deg; }
+.result-confetti span:nth-child(2) { --top: 4%; --left: 48%; --angle: 40deg; --confetti-color: #e5c583; }
+.result-confetti span:nth-child(3) { --top: 9%; --left: 53%; --angle: -32deg; }
+.result-confetti span:nth-child(4) { --top: 26%; --left: 97%; --angle: 23deg; --confetti-color: #a9d5d6; }
+.result-confetti span:nth-child(5) { --top: 72%; --left: 2%; --angle: 42deg; --confetti-color: #e5c583; }
+.result-confetti span:nth-child(6) { --top: 77%; --left: 97%; --angle: -39deg; }
+
+@keyframes result-confetti {
+  0% { opacity: 0; translate: 0 -13px; }
+  25% { opacity: 0.9; }
+  100% { opacity: 0; translate: 0 10px; }
+}
+
+@media (max-height: 470px) {
+  #result-dialog { padding: 12px 15px; }
+  .result-heading { margin-bottom: 8px; }
+  .result-board { padding: 11px; }
+  .result-actions { margin-top: 9px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #result-dialog[data-celebrate] .result-confetti { display: none; }
+}
 
 .visually-hidden {
   position: absolute;

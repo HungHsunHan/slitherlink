@@ -1,6 +1,6 @@
 import { puzzles } from './puzzles.mjs';
 import { EDGES, SIZE, inspectBoard } from './rules.mjs';
-import { changeMark, createAttempt, elapsedAt, formatTime, undoMark } from './session.mjs';
+import { changeMark, completeAttempt, createAttempt, elapsedAt, formatTime, undoMark } from './session.mjs';
 
 const DIFFICULTIES = { easy: '簡單', medium: '中等', hard: '困難' };
 const STORAGE = 'slitherlink-7x7-v1';
@@ -19,6 +19,8 @@ const undo = get('undo');
 const restart = get('restart');
 const answer = get('answer');
 const confirmDialog = get('confirm-dialog');
+const resultDialog = get('result-dialog');
+const resultButton = get('open-result');
 const difficultyButtons = [...document.querySelectorAll('[data-difficulty]')];
 const toolButtons = [...document.querySelectorAll('[data-tool]')];
 const edgeButtons = new Map();
@@ -216,6 +218,7 @@ function renderPlay() {
   status.parentElement.dataset.state = showingAnswer ? 'answer' : attempt.phase;
   bestTime.hidden = attempt.bestMs === null;
   bestTime.textContent = attempt.bestMs === null ? '' : `最佳 ${formatTime(attempt.bestMs)}`;
+  resultButton.hidden = showingAnswer || attempt.phase !== 'solved';
   undo.disabled = showingAnswer || attempt.history.length === 0;
   restart.disabled = showingAnswer || attempt.phase === 'ready';
   get('answer-label').textContent = showingAnswer ? '返回棋盤' : '查看解答';
@@ -250,17 +253,31 @@ function saveAttempt() {
   });
 }
 
+function showResult(celebrate = false) {
+  if (attempt.phase !== 'solved' || showingAnswer) return;
+
+  const snapshot = board.cloneNode(true);
+  snapshot.removeAttribute('id');
+  snapshot.removeAttribute('aria-describedby');
+  snapshot.inert = true;
+  get('result-board').replaceChildren(snapshot);
+  get('result-level').textContent = levelTitle.textContent;
+  get('result-time').textContent = formatTime(attempt.elapsedMs);
+  resultDialog.toggleAttribute('data-celebrate', celebrate);
+  resultDialog.showModal();
+}
+
 function updateAfterMove() {
   const { solved } = inspectBoard(puzzles[mode][level].clues, attempt.marks);
   if (solved) {
     pauseClock();
-    attempt.phase = 'solved';
-    attempt.bestMs = Math.min(attempt.bestMs ?? Infinity, attempt.elapsedMs);
+    completeAttempt(attempt);
     renderPicker();
   }
   syncClock();
   saveAttempt();
   renderPlay();
+  if (solved) showResult(true);
 }
 
 function playEdge(button, mark) {
@@ -390,6 +407,8 @@ answer.addEventListener('click', () => {
     confirmChoice('查看本關解答？', '解答會顯示完整迴路，返回時可繼續你的進度。', '顯示解答', () => setAnswer(true));
   }
 });
+
+resultButton.addEventListener('click', () => showResult());
 
 get('open-help').addEventListener('click', () => get('help-dialog').showModal());
 

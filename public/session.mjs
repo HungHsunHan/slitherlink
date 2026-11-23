@@ -25,6 +25,11 @@ export function undoMark(attempt) {
   return true;
 }
 
+export function completeAttempt(attempt) {
+  attempt.phase = 'solved';
+  attempt.bestMs = Math.min(attempt.bestMs ?? Infinity, attempt.elapsedMs);
+}
+
 export function elapsedAt(attempt, startedAt, now) {
   return attempt.elapsedMs + (startedAt === null ? 0 : Math.max(0, now - startedAt));
 }
