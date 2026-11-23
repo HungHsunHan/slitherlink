@@ -1,0 +1,15 @@
+{
+  "name": "slitherlink-lan",
+  "version": "1.0.0",
+  "private": true,
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "start": "node server.mjs",
+    "start:lan": "node server.mjs --lan",
+    "test": "node --test",
+    "service:install": "node scripts/macos-service.mjs install",
+    "service:uninstall": "node scripts/macos-service.mjs uninstall"
+  }
+}
