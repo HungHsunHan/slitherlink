@@ -1,16 +1,20 @@
 # 數迴 Slitherlink
 
-在固定 7×7 的棋盤上畫出一條不分岔的封閉迴路。簡單、中等、困難各有 30 關，可以直接選關。遊戲在瀏覽器執行，每台裝置的進度分別存在該裝置的瀏覽器。
+看完《魔鬼的計謀》第 3 季的放逐區挑戰，想換自己上場？跟著數字在 7×7 棋盤上畫線，看看你多快能把所有線段連成一條封閉迴路。
 
-## Cloudflare 公開版
+**[立即挑戰數迴](https://slitherlink.b04605078123.workers.dev/)** · 手機、平板、電腦點開就能玩，免登入、免安裝。
 
-任何人都可以免費開啟 [數迴遊戲](https://slitherlink.b04605078123.workers.dev/)。遊戲由 Cloudflare 直接提供 `public/` 的靜態檔案，不需要登入、綁定付款方式或讓 Mac 開機。靜態檔案請求不占用 Workers Free 的每日程式執行額度。 [Cloudflare 靜態資源計費](https://developers.cloudflare.com/workers/static-assets/billing-and-limitations/#billing)
+這是粉絲自製的數迴遊戲。簡單、中等、困難各有 30 道原創關卡，每關都能直接選，也可以重玩挑戰自己的最快紀錄。
+
+## Cloudflare 部署
+
+遊戲由 Cloudflare 直接提供 `public/` 的靜態檔案。靜態檔案請求不占用 Workers Free 的每日程式執行額度。 [Cloudflare 靜態資源計費](https://developers.cloudflare.com/workers/static-assets/billing-and-limitations/#billing)
 
 進度與最佳時間儲存在各自的瀏覽器。遊戲檔案包含題目與解答，任何訪客都可以讀取。
 
 ### CI/CD
 
-[GitHub 私人儲存庫](https://github.com/HungHsunHan/slitherlink) 已連接 Cloudflare Workers Builds。正式部署分支是 `main`，專案根目錄是 `/`，預覽建置已關閉。
+GitHub 儲存庫已連接 Cloudflare Workers Builds。正式部署分支是 `main`，專案根目錄是 `/`，預覽建置已關閉。
 
 | 設定 | 值 |
 | --- | --- |
