@@ -4,6 +4,7 @@ import { changeMark, completeAttempt, createAttempt, elapsedAt, formatTime, undo
 
 const DIFFICULTIES = { easy: '簡單', medium: '中等', hard: '困難' };
 const STORAGE = 'slitherlink-7x7-v1';
+const ATTEMPT_BANKS = { medium: 'medium-v2', hard: 'hard-v2' };
 const STATE_NAMES = { line: '已畫線', cross: '已標記空邊', empty: '未標記' };
 const EDGES_BY_ID = new Map(EDGES.map((edge) => [edge.id, edge]));
 
@@ -28,8 +29,7 @@ const edgePositions = new Map();
 const clueElements = [];
 const levelButtons = [];
 
-// New hard puzzles have their own attempts and best times.
-const levelKey = (mode, level) => `${STORAGE}/${mode === 'hard' ? 'hard-v2' : mode}/${level}`;
+const levelKey = (mode, level) => `${STORAGE}/${ATTEMPT_BANKS[mode] ?? mode}/${level}`;
 const numberLabel = (index) => String(index + 1).padStart(2, '0');
 
 function read(key) {

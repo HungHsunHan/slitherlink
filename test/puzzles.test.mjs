@@ -6,8 +6,13 @@ import { cellEdges, size, solvePuzzle } from '../scripts/puzzle-solver.mjs';
 
 const ranges = {
   easy: { clues: [31, 35], nodes: [1, 12] },
-  medium: { clues: [24, 28], nodes: [13, 80] },
+  medium: { clues: [24, 26], nodes: [80, 300] },
   hard: { clues: [26, 29], nodes: [501, 2500] },
+};
+
+const shapeRanges = {
+  medium: { area: [33, 35], zeros: [2, 4] },
+  hard: { area: [36, 42], zeros: [0, 0] },
 };
 
 function enclosedCells(solution) {
@@ -66,24 +71,27 @@ test('all 90 levels have distinct clues and loop shapes', () => {
   assert.equal(new Set(levels.map(({ solution }) => [...solution].sort().join(','))).size, 90);
 });
 
-test('every hard puzzle encloses 36–42 cells', () => {
-  puzzles.hard.forEach(({ solution }, index) => {
-    const area = enclosedCells(solution);
-    assert.ok(area >= 36 && area <= 42, `level ${index + 1} encloses ${area} cells`);
+for (const [difficulty, { area: [minArea, maxArea], zeros: [minZeros, maxZeros] }] of Object.entries(shapeRanges)) {
+  test(`every ${difficulty} puzzle encloses the expected number of cells`, () => {
+    puzzles[difficulty].forEach(({ solution }, index) => {
+      const area = enclosedCells(solution);
+      assert.ok(area >= minArea && area <= maxArea, `level ${index + 1} encloses ${area} cells`);
+    });
   });
-});
 
-test('every hard puzzle hides all zero clues', () => {
-  puzzles.hard.forEach((level, index) => {
-    assert.equal(zeroClues(level), 0, `level ${index + 1} shows a zero`);
+  test(`every ${difficulty} puzzle shows the expected number of zeros`, () => {
+    puzzles[difficulty].forEach((level, index) => {
+      const zeros = zeroClues(level);
+      assert.ok(zeros >= minZeros && zeros <= maxZeros, `level ${index + 1} shows ${zeros} zeros`);
+    });
   });
-});
+}
 
-test('average enclosure grows with difficulty', () => {
+test('each medium enclosure falls between the easy and hard banks', () => {
   const { easy, medium, hard } = puzzles;
-  const averageArea = (levels) => mean(levels, ({ solution }) => enclosedCells(solution));
-  assert.ok(averageArea(easy) < averageArea(medium));
-  assert.ok(averageArea(medium) < averageArea(hard));
+  const areas = (levels) => levels.map(({ solution }) => enclosedCells(solution));
+  assert.ok(Math.max(...areas(easy)) < Math.min(...areas(medium)));
+  assert.ok(Math.max(...areas(medium)) < Math.min(...areas(hard)));
 });
 
 test('the average number of visible zero clues drops with difficulty', () => {
