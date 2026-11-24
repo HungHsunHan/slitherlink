@@ -28,7 +28,8 @@ const edgePositions = new Map();
 const clueElements = [];
 const levelButtons = [];
 
-const levelKey = (mode, level) => `${STORAGE}/${mode}/${level}`;
+// New hard puzzles have their own attempts and best times.
+const levelKey = (mode, level) => `${STORAGE}/${mode === 'hard' ? 'hard-v2' : mode}/${level}`;
 const numberLabel = (index) => String(index + 1).padStart(2, '0');
 
 function read(key) {
