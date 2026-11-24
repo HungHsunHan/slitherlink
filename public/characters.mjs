@@ -7,8 +7,17 @@ export const characters = [
   { id: 'rakko', name: '海獺' },
   { id: 'shisa', name: '風獅爺' },
   { id: 'furuhonya', name: '古本屋' },
-].map((character) => ({ ...character, src: `./characters/${character.id}.webp` }));
+].map((character) => ({
+  ...character,
+  images: ['', '-2', '-3'].map((suffix) => `./characters/${character.id}${suffix}.webp`),
+}));
 
-export function pickCharacter(sample = Math.random()) {
-  return characters[Math.floor(sample * characters.length)];
+export function pickCharacters(count, random = Math.random) {
+  const available = [...characters];
+  return Array.from({ length: count }, () => {
+    const index = Math.floor(random() * available.length);
+    const [{ id, name, images }] = available.splice(index, 1);
+    const src = images[Math.floor(random() * images.length)];
+    return { id, name, src };
+  });
 }

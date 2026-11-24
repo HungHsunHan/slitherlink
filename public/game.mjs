@@ -1,9 +1,10 @@
-import { pickCharacter } from './characters.mjs';
+import { pickCharacters } from './characters.mjs';
 import { puzzles } from './puzzles.mjs';
 import { EDGES, SIZE, inspectBoard } from './rules.mjs';
 import { changeMark, completeAttempt, createAttempt, elapsedAt, formatTime, undoMark } from './session.mjs';
 
 const DIFFICULTIES = { easy: '簡單', medium: '中等', hard: '困難' };
+const WIN_CHARACTER_COUNTS = { easy: 1, medium: 2, hard: 3 };
 const STORAGE = 'slitherlink-7x7-v1';
 const ATTEMPT_BANKS = { medium: 'medium-v2', hard: 'hard-v2' };
 const STATE_NAMES = { line: '已畫線', cross: '已標記空邊', empty: '未標記' };
@@ -22,7 +23,7 @@ const restart = get('restart');
 const answer = get('answer');
 const confirmDialog = get('confirm-dialog');
 const resultDialog = get('result-dialog');
-const resultCharacter = get('result-character');
+const resultCharacters = get('result-characters');
 const resultButton = get('open-result');
 const difficultyButtons = [...document.querySelectorAll('[data-difficulty]')];
 const toolButtons = [...document.querySelectorAll('[data-tool]')];
@@ -256,6 +257,18 @@ function saveAttempt() {
   });
 }
 
+function createResultPortrait({ name, src }) {
+  const figure = document.createElement('figure');
+  figure.className = 'result-character';
+  const image = new Image(180, 180);
+  image.alt = '';
+  image.src = src;
+  const caption = document.createElement('figcaption');
+  caption.textContent = name;
+  figure.append(image, caption);
+  return figure;
+}
+
 function showResult(celebrate = false) {
   if (attempt.phase !== 'solved' || showingAnswer) return;
 
@@ -266,17 +279,10 @@ function showResult(celebrate = false) {
   get('result-board').replaceChildren(snapshot);
   get('result-level').textContent = levelTitle.textContent;
   get('result-time').textContent = formatTime(attempt.elapsedMs);
-  resultCharacter.replaceChildren();
-  resultCharacter.hidden = !celebrate;
-  if (celebrate) {
-    const character = pickCharacter();
-    const image = new Image(180, 180);
-    image.alt = '';
-    image.src = character.src;
-    const caption = document.createElement('figcaption');
-    caption.textContent = character.name;
-    resultCharacter.append(image, caption);
-  }
+  const characters = celebrate ? pickCharacters(WIN_CHARACTER_COUNTS[mode]) : [];
+  resultCharacters.replaceChildren(...characters.map(createResultPortrait));
+  resultCharacters.hidden = !celebrate;
+  resultDialog.dataset.portraitCount = characters.length;
   resultDialog.toggleAttribute('data-celebrate', celebrate);
   resultDialog.showModal();
 }

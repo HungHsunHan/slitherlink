@@ -576,7 +576,24 @@ dialog button:focus-visible { outline-color: #397557; }
   overscroll-behavior: contain;
 }
 
-#result-dialog[data-celebrate] { width: min(590px, 100% - 24px); }
+#result-dialog[data-celebrate] {
+  --result-dialog-max-width: 590px;
+  --result-character-track: 0.54fr;
+  --result-portrait-width: 180px;
+  width: min(var(--result-dialog-max-width), 100% - 24px);
+}
+
+#result-dialog[data-portrait-count="2"] {
+  --result-dialog-max-width: 710px;
+  --result-character-track: 0.82fr;
+  --result-portrait-width: 138px;
+}
+
+#result-dialog[data-portrait-count="3"] {
+  --result-dialog-max-width: 830px;
+  --result-character-track: 1.17fr;
+  --result-portrait-width: 132px;
+}
 
 .result-heading {
   display: flex;
@@ -629,14 +646,21 @@ dialog button:focus-visible { outline-color: #397557; }
 
 #result-dialog[data-celebrate] .result-content {
   display: grid;
-  grid-template-columns: minmax(0, 0.54fr) minmax(0, 1fr);
+  grid-template-columns: minmax(0, var(--result-character-track)) minmax(0, 1fr);
   align-items: center;
   gap: clamp(10px, 3vw, 18px);
 }
 
+.result-characters {
+  display: flex;
+  justify-content: center;
+  gap: clamp(6px, 1.4vw, 10px);
+}
+
 .result-character {
-  width: min(100%, 180px);
-  margin: 0 auto;
+  flex: 0 1 var(--result-portrait-width);
+  min-width: 0;
+  margin: 0;
   overflow: hidden;
   border: 1px solid #f4dbe7;
   border-radius: 16px;
@@ -730,10 +754,10 @@ dialog button:focus-visible { outline-color: #397557; }
   100% { opacity: 0; translate: 0 10px; }
 }
 
-@media (max-width: 460px) and (min-height: 550px) {
+@media (max-width: 560px) and (min-height: 550px) {
   #result-dialog[data-celebrate] { --result-board-height-offset: 370px; }
   #result-dialog[data-celebrate] .result-content { grid-template-columns: minmax(0, 1fr); }
-  .result-character { width: clamp(110px, 34vw, 150px); }
+  .result-character { flex-basis: min(var(--result-portrait-width), clamp(110px, 34vw, 150px)); }
 }
 
 @media (max-height: 470px) {
@@ -741,8 +765,8 @@ dialog button:focus-visible { outline-color: #397557; }
   #result-dialog[data-celebrate] { --result-board-height-offset: 184px; }
   .result-heading { margin-bottom: 8px; }
   .result-character {
-    width: min(100%, 180px, max(86px, calc(100vh - 220px)));
-    width: min(100%, 180px, max(86px, calc(100dvh - 220px)));
+    flex-basis: min(var(--result-portrait-width), max(86px, calc(100vh - 220px)));
+    flex-basis: min(var(--result-portrait-width), max(86px, calc(100dvh - 220px)));
   }
   .result-board { padding: 11px; }
   .result-actions { margin-top: 9px; }
