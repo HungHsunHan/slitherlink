@@ -566,6 +566,7 @@ dialog .dialog-primary { border-color: #254f3c; background: #28573f; color: #fff
 dialog button:focus-visible { outline-color: #397557; }
 
 #result-dialog {
+  --result-board-height-offset: 174px;
   width: min(470px, 100% - 24px);
   padding: clamp(15px, 4vw, 25px);
   border-color: #597e76;
@@ -574,6 +575,8 @@ dialog button:focus-visible { outline-color: #397557; }
   color: var(--white);
   overscroll-behavior: contain;
 }
+
+#result-dialog[data-celebrate] { width: min(590px, 100% - 24px); }
 
 .result-heading {
   display: flex;
@@ -624,9 +627,44 @@ dialog button:focus-visible { outline-color: #397557; }
   font-variant-numeric: tabular-nums;
 }
 
+#result-dialog[data-celebrate] .result-content {
+  display: grid;
+  grid-template-columns: minmax(0, 0.54fr) minmax(0, 1fr);
+  align-items: center;
+  gap: clamp(10px, 3vw, 18px);
+}
+
+.result-character {
+  width: min(100%, 180px);
+  margin: 0 auto;
+  overflow: hidden;
+  border: 1px solid #f4dbe7;
+  border-radius: 16px;
+  background: #fdebf3;
+  color: #543b4c;
+  box-shadow: 0 9px 28px #06182454;
+}
+
+.result-character img {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 1;
+  object-fit: contain;
+  background: #fffafa;
+}
+
+.result-character figcaption {
+  padding: 7px 4px 8px;
+  border-top: 1px solid #f4dbe7;
+  font-size: 0.88rem;
+  font-weight: 700;
+  text-align: center;
+}
+
 .result-board {
-  width: min(100%, max(144px, calc(100vh - 174px)));
-  width: min(100%, max(144px, calc(100dvh - 174px)));
+  width: min(100%, max(144px, calc(100vh - var(--result-board-height-offset))));
+  width: min(100%, max(144px, calc(100dvh - var(--result-board-height-offset))));
   margin-inline: auto;
   padding: clamp(13px, 4vw, 24px);
   border-color: #cfdfb5;
@@ -692,9 +730,20 @@ dialog button:focus-visible { outline-color: #397557; }
   100% { opacity: 0; translate: 0 10px; }
 }
 
+@media (max-width: 460px) and (min-height: 550px) {
+  #result-dialog[data-celebrate] { --result-board-height-offset: 370px; }
+  #result-dialog[data-celebrate] .result-content { grid-template-columns: minmax(0, 1fr); }
+  .result-character { width: clamp(110px, 34vw, 150px); }
+}
+
 @media (max-height: 470px) {
   #result-dialog { padding: 12px 15px; }
+  #result-dialog[data-celebrate] { --result-board-height-offset: 184px; }
   .result-heading { margin-bottom: 8px; }
+  .result-character {
+    width: min(100%, 180px, max(86px, calc(100vh - 220px)));
+    width: min(100%, 180px, max(86px, calc(100dvh - 220px)));
+  }
   .result-board { padding: 11px; }
   .result-actions { margin-top: 9px; }
 }
