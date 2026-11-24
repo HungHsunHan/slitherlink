@@ -195,19 +195,11 @@ h1 span { color: #689477; }
   line-height: 1;
   letter-spacing: -0.04em;
   font-variant-numeric: tabular-nums;
+  color: #141414;
   pointer-events: none;
 }
 
-.clue[data-state="met"] {
-  display: grid;
-  place-items: center;
-  width: 1.25em;
-  aspect-ratio: 1;
-  border-radius: 50%;
-  background: #d3e8c4;
-  color: #536854;
-}
-
+.clue[data-state="met"] { color: #627b54; }
 .clue[data-state="conflict"] { color: var(--red); font-weight: 750; }
 
 .dot {
