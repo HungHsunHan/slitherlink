@@ -1,4 +1,4 @@
-import { pickCharacters } from './characters.mjs';
+import { pickCharacters, pickSpecialReward } from './characters.mjs';
 import { puzzles } from './puzzles.mjs';
 import { EDGES, SIZE, inspectBoard } from './rules.mjs';
 import { changeMark, completeAttempt, createAttempt, elapsedAt, formatTime, undoMark } from './session.mjs';
@@ -269,6 +269,14 @@ function createResultPortrait({ name, src }) {
   return figure;
 }
 
+function createResultReward({ alt, src }) {
+  const image = new Image();
+  image.className = 'result-reward';
+  image.alt = alt;
+  image.src = src;
+  return image;
+}
+
 function showResult(celebrate = false) {
   if (attempt.phase !== 'solved' || showingAnswer) return;
 
@@ -279,11 +287,15 @@ function showResult(celebrate = false) {
   get('result-board').replaceChildren(snapshot);
   get('result-level').textContent = levelTitle.textContent;
   get('result-time').textContent = formatTime(attempt.elapsedMs);
-  const characters = celebrate ? pickCharacters(WIN_CHARACTER_COUNTS[mode]) : [];
-  resultCharacters.replaceChildren(...characters.map(createResultPortrait));
+  const reward = celebrate ? pickSpecialReward(mode, attempt.elapsedMs) : null;
+  const characters = celebrate && !reward ? pickCharacters(WIN_CHARACTER_COUNTS[mode]) : [];
+  const images = reward ? [createResultReward(reward)] : characters.map(createResultPortrait);
+  get('result-title').textContent = reward ? '超厲害！！' : '解題成功！';
+  resultCharacters.replaceChildren(...images);
   resultCharacters.hidden = !celebrate;
   resultDialog.dataset.portraitCount = characters.length;
   resultDialog.toggleAttribute('data-celebrate', celebrate);
+  resultDialog.toggleAttribute('data-special-reward', Boolean(reward));
   resultDialog.showModal();
 }
 

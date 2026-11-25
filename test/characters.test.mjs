@@ -2,8 +2,10 @@ import assert from 'node:assert/strict';
 import { once } from 'node:events';
 import { test } from 'node:test';
 import { promisify } from 'node:util';
-import { characters, pickCharacters } from '../public/characters.mjs';
+import { characters, pickCharacters, pickSpecialReward } from '../public/characters.mjs';
 import { createGameServer, parseOptions, resolveBinding } from '../server.mjs';
+
+const rewardSamples = Array.from({ length: 7 }, (_, index) => (index + 0.5) / 7);
 
 test('each eighth of the random range can select a different character', () => {
   assert.equal(characters.length, 8);
@@ -40,7 +42,22 @@ test('a celebration chooses a separate image variant for each character', () => 
   assert.deepEqual(variantIndexes.sort(), [0, 1, 2]);
 });
 
-test('the game server serves three distinct local WebP portraits for each character', async (t) => {
+for (const [difficulty, limitMs] of [['easy', 90_000], ['medium', 150_000], ['hard', 180_000]]) {
+  test(`${difficulty} awards a special image at the time limit`, () => {
+    assert.ok(pickSpecialReward(difficulty, limitMs, () => 0));
+  });
+
+  test(`${difficulty} does not award a special image one millisecond over the limit`, () => {
+    assert.equal(pickSpecialReward(difficulty, limitMs + 1, () => assert.fail('unexpected draw')), null);
+  });
+}
+
+test('each seventh of the random range can select a different special reward', () => {
+  const sources = rewardSamples.map((sample) => pickSpecialReward('easy', 0, () => sample).src);
+  assert.equal(new Set(sources).size, 7);
+});
+
+test('the game server serves all character portraits and special rewards as local WebP images', async (t) => {
   const binding = resolveBinding(parseOptions([]));
   const server = createGameServer(binding);
   await once(server.listen(0, binding.host), 'listening');
@@ -50,7 +67,8 @@ test('the game server serves three distinct local WebP portraits for each charac
   for (const { id, images } of characters) assert.equal(images.length, 3, id);
   const sources = characters.flatMap(({ images }) => images);
   assert.equal(new Set(sources).size, 24);
-  for (const src of sources) {
+  const rewards = rewardSamples.map((sample) => pickSpecialReward('easy', 0, () => sample).src);
+  for (const src of [...sources, ...rewards]) {
     const url = new URL(src, origin);
     assert.equal(url.origin, origin, src);
     const response = await fetch(url);

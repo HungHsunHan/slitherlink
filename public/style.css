@@ -595,6 +595,12 @@ dialog button:focus-visible { outline-color: #397557; }
   --result-portrait-width: 132px;
 }
 
+#result-dialog[data-special-reward] {
+  --result-dialog-max-width: 720px;
+  --result-character-track: 0.88fr;
+  border-color: #d8b876;
+}
+
 .result-heading {
   display: flex;
   justify-content: space-between;
@@ -609,6 +615,8 @@ dialog button:focus-visible { outline-color: #397557; }
   font-size: clamp(1.3rem, 6.4vw, 2.14rem);
   line-height: 1.2;
 }
+
+#result-dialog[data-special-reward] .result-heading h2 { color: #f7dc9d; }
 
 .result-level {
   margin: 0;
@@ -655,6 +663,15 @@ dialog button:focus-visible { outline-color: #397557; }
   display: flex;
   justify-content: center;
   gap: clamp(6px, 1.4vw, 10px);
+}
+
+.result-reward {
+  display: block;
+  max-width: 100%;
+  max-height: min(244px, max(88px, calc(100dvh - 185px)));
+  border: 1px solid #f7dc9d;
+  border-radius: 16px;
+  box-shadow: 0 9px 28px #06182454;
 }
 
 .result-character {
@@ -756,7 +773,9 @@ dialog button:focus-visible { outline-color: #397557; }
 
 @media (max-width: 560px) and (min-height: 550px) {
   #result-dialog[data-celebrate] { --result-board-height-offset: 370px; }
+  #result-dialog[data-special-reward] { --result-board-height-offset: 406px; }
   #result-dialog[data-celebrate] .result-content { grid-template-columns: minmax(0, 1fr); }
+  .result-reward { max-width: min(100%, 210px); }
   .result-character { flex-basis: min(var(--result-portrait-width), clamp(110px, 34vw, 150px)); }
 }
 
