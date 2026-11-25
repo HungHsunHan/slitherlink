@@ -2,13 +2,13 @@
 
 看完《魔鬼的計謀》第 3 季的放逐區挑戰，想換自己上場？跟著數字在 7×7 棋盤上畫線，看看你多快能把所有線段連成一條封閉迴路。
 
-**[立即挑戰數迴](https://slitherlink.b04605078123.workers.dev/)** · 手機、平板、電腦點開就能玩，免登入、免安裝。
+**[立即挑戰數迴](https://slitherlink.zangzhen-games.workers.dev/)** · 手機、平板、電腦點開就能玩，免登入、免安裝。
 
 這是粉絲自製的數迴遊戲。簡單、中等、困難各有 30 道原創關卡，每關都能直接選，也可以重玩挑戰自己的最快紀錄。
 
 ## 遊戲畫面
 
-[![桌面版數迴棋盤，顯示作答中的迴路、關卡與工具](docs/demo/desktop.png)](https://slitherlink.b04605078123.workers.dev/)
+[![桌面版數迴棋盤，顯示作答中的迴路、關卡與工具](docs/demo/desktop.png)](https://slitherlink.zangzhen-games.workers.dev/)
 
 <p align="center">
   <img src="docs/demo/mobile.png" alt="手機版直向畫面，棋盤與作答工具上下排列" width="34%">
