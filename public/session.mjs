@@ -1,5 +1,5 @@
 export function createAttempt(bestMs = null) {
-  return { marks: {}, history: [], elapsedMs: 0, phase: 'ready', bestMs };
+  return { marks: {}, history: [], elapsedMs: 0, phase: 'ready', bestMs, celebration: null };
 }
 
 function setMark(attempt, edge, mark) {
@@ -15,6 +15,7 @@ export function changeMark(attempt, edge, mark) {
   attempt.history.push([edge, previous]);
   setMark(attempt, edge, previous === mark ? null : mark);
   attempt.phase = 'playing';
+  attempt.celebration = null;
 }
 
 export function undoMark(attempt) {
@@ -22,12 +23,14 @@ export function undoMark(attempt) {
   if (!move) return false;
   setMark(attempt, ...move);
   attempt.phase = 'playing';
+  attempt.celebration = null;
   return true;
 }
 
-export function completeAttempt(attempt) {
+export function completeAttempt(attempt, celebration = null) {
   attempt.phase = 'solved';
   attempt.bestMs = Math.min(attempt.bestMs ?? Infinity, attempt.elapsedMs);
+  attempt.celebration = celebration;
 }
 
 export function elapsedAt(attempt, startedAt, now) {

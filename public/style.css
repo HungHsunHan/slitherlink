@@ -606,7 +606,7 @@ dialog button:focus-visible { outline-color: #397557; }
   overscroll-behavior: contain;
 }
 
-#result-dialog[data-celebrate] {
+#result-dialog[data-has-images] {
   --result-dialog-max-width: 590px;
   --result-character-track: 0.54fr;
   --result-portrait-width: 180px;
@@ -682,7 +682,7 @@ dialog button:focus-visible { outline-color: #397557; }
   font-variant-numeric: tabular-nums;
 }
 
-#result-dialog[data-celebrate] .result-content {
+#result-dialog[data-has-images] .result-content {
   display: grid;
   grid-template-columns: minmax(0, var(--result-character-track)) minmax(0, 1fr);
   align-items: center;
@@ -804,16 +804,16 @@ dialog button:focus-visible { outline-color: #397557; }
 }
 
 @media (max-width: 560px) and (min-height: 550px) {
-  #result-dialog[data-celebrate] { --result-board-height-offset: 370px; }
+  #result-dialog[data-has-images] { --result-board-height-offset: 370px; }
   #result-dialog[data-special-reward] { --result-board-height-offset: 406px; }
-  #result-dialog[data-celebrate] .result-content { grid-template-columns: minmax(0, 1fr); }
+  #result-dialog[data-has-images] .result-content { grid-template-columns: minmax(0, 1fr); }
   .result-reward { max-width: min(100%, 210px); }
   .result-character { flex-basis: min(var(--result-portrait-width), clamp(110px, 34vw, 150px)); }
 }
 
 @media (max-height: 470px) {
   #result-dialog { padding: 12px 15px; }
-  #result-dialog[data-celebrate] { --result-board-height-offset: 184px; }
+  #result-dialog[data-has-images] { --result-board-height-offset: 184px; }
   .result-heading { margin-bottom: 8px; }
   .result-character {
     flex-basis: min(var(--result-portrait-width), max(86px, calc(100vh - 220px)));

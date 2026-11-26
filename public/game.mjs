@@ -308,7 +308,7 @@ function createResultReward({ alt, src }) {
   return image;
 }
 
-function showResult(celebrate = false) {
+function showResult(animate = false) {
   if (attempt.phase !== 'solved' || showingAnswer) return;
 
   const snapshot = board.cloneNode(true);
@@ -319,14 +319,14 @@ function showResult(celebrate = false) {
   resultBoard.replaceChildren(snapshot);
   get('result-level').textContent = `${sizeLabel(size)} · ${levelTitle.textContent}`;
   get('result-time').textContent = formatTime(attempt.elapsedMs);
-  const reward = celebrate ? pickSpecialReward(mode, attempt.elapsedMs) : null;
-  const characters = celebrate && !reward ? pickCharacters(WIN_CHARACTER_COUNTS[mode]) : [];
-  const images = reward ? [createResultReward(reward)] : characters.map(createResultPortrait);
+  const { reward, portraits = [] } = attempt.celebration ?? {};
+  const images = reward ? [createResultReward(reward)] : portraits.map(createResultPortrait);
   get('result-title').textContent = reward ? '超厲害！！' : '解題成功！';
   resultCharacters.replaceChildren(...images);
-  resultCharacters.hidden = !celebrate;
-  resultDialog.dataset.portraitCount = characters.length;
-  resultDialog.toggleAttribute('data-celebrate', celebrate);
+  resultCharacters.hidden = images.length === 0;
+  resultDialog.dataset.portraitCount = portraits.length;
+  resultDialog.toggleAttribute('data-has-images', images.length > 0);
+  resultDialog.toggleAttribute('data-celebrate', animate);
   resultDialog.toggleAttribute('data-special-reward', Boolean(reward));
   resultDialog.showModal();
 }
@@ -336,7 +336,9 @@ function updateAfterMove() {
   const { solved } = inspectBoard(clues, attempt.marks);
   if (solved) {
     pauseClock();
-    completeAttempt(attempt);
+    const reward = pickSpecialReward(mode, attempt.elapsedMs);
+    const portraits = reward ? [] : pickCharacters(WIN_CHARACTER_COUNTS[mode]);
+    completeAttempt(attempt, { reward, portraits });
     renderPicker();
   }
   syncClock();

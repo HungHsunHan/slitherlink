@@ -2,6 +2,11 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import { changeMark, completeAttempt, createAttempt, elapsedAt, formatTime, undoMark } from '../public/session.mjs';
 
+const timedCelebration = {
+  reward: { src: './rewards/speed-8.webp', alt: '吉伊卡哇、小八貓和兔兔在遊樂園拿著點心' },
+  portraits: [],
+};
+
 test('drawing the same mark again clears the edge', () => {
   const attempt = createAttempt();
   changeMark(attempt, 'h-0-0', 'line');
@@ -21,13 +26,34 @@ test('undo restores the previous mark before undoing the original move', () => {
 });
 
 test('restart clears the active attempt and keeps its personal best', () => {
-  assert.deepEqual(createAttempt(2112), {
+  const completed = createAttempt();
+  completed.elapsedMs = 2112;
+  completeAttempt(completed, timedCelebration);
+
+  assert.deepEqual(createAttempt(completed.bestMs), {
     marks: {},
     history: [],
     elapsedMs: 0,
     phase: 'ready',
     bestMs: 2112,
+    celebration: null,
   });
+});
+
+test('the original award is saved with the completed attempt', () => {
+  const attempt = createAttempt();
+  completeAttempt(attempt, timedCelebration);
+
+  assert.deepEqual(JSON.parse(JSON.stringify(attempt)).celebration, timedCelebration);
+});
+
+test('undoing a solved move clears the completed attempt’s award', () => {
+  const attempt = createAttempt();
+  changeMark(attempt, 'h-0-0', 'line');
+  completeAttempt(attempt, timedCelebration);
+  undoMark(attempt);
+
+  assert.equal(attempt.celebration, null);
 });
 
 test('elapsed time includes only the current running interval plus the saved time', () => {
