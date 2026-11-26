@@ -27,6 +27,12 @@ const specialRewards = [
   '風獅爺抱著寫有福字的金幣',
   '小八貓和吉伊卡哇開心地跑步',
   '戴著藍色蝴蝶結的小桃鼠',
+  '吉伊卡哇、小八貓和兔兔在遊樂園拿著點心',
+  '兔兔、吉伊卡哇和小八貓趴在紙上畫畫',
+  '吉伊卡哇、小八貓和兔兔坐在樹樁上彈奏',
+  '兩列綠色小角色一起跳舞',
+  '小桃鼠舉起雙手，身後露出藍色尾巴',
+  '粉紅背景上的淺綠色小角色',
 ].map((alt, index) => ({ alt, src: `./rewards/speed-${index + 1}.webp` }));
 
 export function pickSpecialReward(difficulty, elapsedMs, random = Math.random) {

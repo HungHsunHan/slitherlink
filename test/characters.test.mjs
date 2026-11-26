@@ -5,7 +5,8 @@ import { promisify } from 'node:util';
 import { characters, pickCharacters, pickSpecialReward } from '../public/characters.mjs';
 import { createGameServer, parseOptions, resolveBinding } from '../server.mjs';
 
-const rewardSamples = Array.from({ length: 7 }, (_, index) => (index + 0.5) / 7);
+const rewardCount = 13;
+const rewardSamples = Array.from({ length: rewardCount }, (_, index) => (index + 0.5) / rewardCount);
 
 test('each ninth of the random range can select a different celebration category', () => {
   assert.equal(characters.length, 9);
@@ -73,9 +74,9 @@ for (const [difficulty, limitMs] of [['easy', 90_000], ['medium', 150_000], ['ha
   });
 }
 
-test('each seventh of the random range can select a different special reward', () => {
+test('all thirteen special rewards can be drawn from equal portions of the random range', () => {
   const sources = rewardSamples.map((sample) => pickSpecialReward('easy', 0, () => sample).src);
-  assert.equal(new Set(sources).size, 7);
+  assert.deepEqual(sources, rewardSamples.map((_, index) => `./rewards/speed-${index + 1}.webp`));
 });
 
 test('the game server serves all character portraits and special rewards as local WebP images', async (t) => {
