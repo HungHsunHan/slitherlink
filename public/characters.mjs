@@ -7,9 +7,15 @@ export const characters = [
   { id: 'rakko', name: '海獺' },
   { id: 'shisa', name: '風獅爺' },
   { id: 'furuhonya', name: '古本屋' },
-].map((character) => ({
-  ...character,
-  images: ['', '-2', '-3'].map((suffix) => `./characters/${character.id}${suffix}.webp`),
+  {
+    id: 'christmas',
+    name: '聖誕節',
+    imageSuffixes: ['', '-2', '-3', '-4', '-5', '-6', '-7', '-8', '-9', '-celebration'],
+  },
+].map(({ id, name, imageSuffixes = ['', '-2', '-3'] }) => ({
+  id,
+  name,
+  images: imageSuffixes.map((suffix) => `./characters/${id}${suffix}.webp`),
 }));
 
 const SPECIAL_REWARD_LIMITS_MS = { easy: 90_000, medium: 150_000, hard: 180_000 };

@@ -7,14 +7,35 @@ import { createGameServer, parseOptions, resolveBinding } from '../server.mjs';
 
 const rewardSamples = Array.from({ length: 7 }, (_, index) => (index + 0.5) / 7);
 
-test('each eighth of the random range can select a different character', () => {
-  assert.equal(characters.length, 8);
-  assert.equal(new Set(characters.map(({ id }) => id)).size, 8);
+test('each ninth of the random range can select a different celebration category', () => {
+  assert.equal(characters.length, 9);
+  assert.equal(new Set(characters.map(({ id }) => id)).size, 9);
   assert.deepEqual(
-    characters.map((_, index) => pickCharacters(1, () => index / characters.length)[0].id),
+    characters.map((_, index) => pickCharacters(1, () => (index + 0.5) / 9)[0].id),
     characters.map(({ id }) => id),
   );
   assert.equal(pickCharacters(1, () => 1 - Number.EPSILON)[0].id, characters.at(-1).id);
+});
+
+test('the Christmas category can select each of its ten images', () => {
+  const categoryIndex = characters.findIndex(({ id }) => id === 'christmas');
+  assert.notEqual(categoryIndex, -1);
+  const categorySample = (categoryIndex + 0.5) / 9;
+  const selected = Array.from({ length: 10 }, (_, index) => {
+    const samples = [categorySample, (index + 0.5) / 10];
+    return pickCharacters(1, () => samples.shift())[0];
+  });
+
+  assert.deepEqual(selected.map(({ src }) => src), characters[categoryIndex].images);
+  assert.equal(new Set(selected.map(({ src }) => src)).size, 10);
+});
+
+test('a celebration can include the Christmas category only once', () => {
+  const categoryIndex = characters.findIndex(({ id }) => id === 'christmas');
+  const categorySample = (categoryIndex + 0.5) / 9;
+  const selected = pickCharacters(3, () => categorySample);
+
+  assert.equal(selected.filter(({ id }) => id === 'christmas').length, 1);
 });
 
 test('a celebration selects the requested number of different characters even when samples repeat', () => {
@@ -64,9 +85,9 @@ test('the game server serves all character portraits and special rewards as loca
   t.after(() => promisify(server.close).call(server));
   const origin = `http://${binding.host}:${server.address().port}`;
 
-  for (const { id, images } of characters) assert.equal(images.length, 3, id);
+  for (const { id, images } of characters) assert.equal(images.length, id === 'christmas' ? 10 : 3, id);
   const sources = characters.flatMap(({ images }) => images);
-  assert.equal(new Set(sources).size, 24);
+  assert.equal(new Set(sources).size, 34);
   const rewards = rewardSamples.map((sample) => pickSpecialReward('easy', 0, () => sample).src);
   for (const src of [...sources, ...rewards]) {
     const url = new URL(src, origin);
