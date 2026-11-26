@@ -19,20 +19,20 @@ const banks = {
       },
     },
   },
-  11: {
-    file: 'puzzles-11.mjs', refinements: 85, perimeterRange: [55, 124], minSpan: 10,
+  9: {
+    file: 'puzzles-9.mjs', refinements: 60, perimeterRange: [40, 86], minSpan: 8,
     difficulties: {
       easy: {
-        seed: 0xb63886a2, minClues: 78, maxClues: 88, minNodes: 1, maxNodes: 30,
-        areaRange: [46, 70],
+        seed: 0xb63886a2, minClues: 52, maxClues: 59, minNodes: 1, maxNodes: 20,
+        areaRange: [31, 48],
       },
       medium: {
-        seed: 0xd470b547, minClues: 62, maxClues: 76, minNodes: 31, maxNodes: 300,
-        areaRange: [71, 82], minZeros: 3, maxZeros: 8,
+        seed: 0xd470b547, minClues: 40, maxClues: 49, minNodes: 21, maxNodes: 300,
+        areaRange: [49, 55], minZeros: 3, maxZeros: 6,
       },
       hard: {
-        seed: 0x802a6bb6, minClues: 62, maxClues: 76, minNodes: 301, maxNodes: 1800,
-        areaRange: [83, 98], maxZeros: 0,
+        seed: 0x802a6bb6, minClues: 40, maxClues: 50, minNodes: 301, maxNodes: 1800,
+        areaRange: [56, 66], maxZeros: 0,
       },
     },
   },
@@ -40,7 +40,7 @@ const banks = {
 
 const [, , sizeArgument = '7', ...extraArgs] = process.argv;
 if (extraArgs.length || !Object.hasOwn(banks, sizeArgument)) {
-  throw new Error('Usage: node scripts/generate-puzzles.mjs [7|11]');
+  throw new Error('Usage: node scripts/generate-puzzles.mjs [7|9]');
 }
 const size = Number(sizeArgument);
 const { file, refinements, perimeterRange, minSpan, difficulties } = banks[size];

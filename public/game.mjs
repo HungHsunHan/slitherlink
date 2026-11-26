@@ -1,12 +1,12 @@
 import { pickCharacters, pickSpecialReward } from './characters.mjs';
-import { puzzles as puzzles11 } from './puzzles-11.mjs';
+import { puzzles as puzzles9 } from './puzzles-9.mjs';
 import { puzzles as puzzles7 } from './puzzles.mjs';
 import { SIZE, edgesFor, inspectBoard } from './rules.mjs';
 import { changeMark, completeAttempt, createAttempt, elapsedAt, formatTime, undoMark } from './session.mjs';
 
 const DIFFICULTIES = { easy: '簡單', medium: '中等', hard: '困難' };
 const WIN_CHARACTER_COUNTS = { easy: 1, medium: 2, hard: 3 };
-const PUZZLES_BY_SIZE = { [SIZE]: puzzles7, 11: puzzles11 };
+const PUZZLES_BY_SIZE = { [SIZE]: puzzles7, 9: puzzles9 };
 const SIZE_KEY = 'slitherlink/size';
 const ATTEMPT_BANKS = { medium: 'medium-v2', hard: 'hard-v2' };
 const STATE_NAMES = { line: '已畫線', cross: '已標記空邊', empty: '未標記' };

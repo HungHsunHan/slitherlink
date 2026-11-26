@@ -1,19 +1,19 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { puzzles } from '../public/puzzles-11.mjs';
+import { puzzles } from '../public/puzzles-9.mjs';
 import { inspectBoard } from '../public/rules.mjs';
 import { createPuzzleSolver } from '../scripts/puzzle-solver.mjs';
 
-const size = 11;
+const size = 9;
 const { solvePuzzle } = createPuzzleSolver(size);
 const tiers = {
-  easy: { clues: [78, 88], nodes: [1, 30] },
-  medium: { clues: [62, 76], nodes: [31, 300] },
-  hard: { clues: [62, 76], nodes: [301, 1800] },
+  easy: { clues: [52, 59], nodes: [1, 20] },
+  medium: { clues: [40, 49], nodes: [21, 300] },
+  hard: { clues: [40, 50], nodes: [301, 1800] },
 };
 
 for (const [tier, { clues: [minClues, maxClues], nodes: [minNodes, maxNodes] }] of Object.entries(tiers)) {
-  test(`the 11×11 ${tier} bank offers 30 boards with the expected clues`, () => {
+  test(`the 9×9 ${tier} bank offers 30 boards with the expected clues`, () => {
     assert.equal(puzzles[tier].length, 30);
     for (const { clues } of puzzles[tier]) {
       assert.equal(clues.length, size);
@@ -24,7 +24,7 @@ for (const [tier, { clues: [minClues, maxClues], nodes: [minNodes, maxNodes] }] 
     }
   });
 
-  test(`the 11×11 ${tier} bank contains unique solutions and is ordered by search effort`, () => {
+  test(`the 9×9 ${tier} bank contains unique solutions and is ordered by search effort`, () => {
     let previousNodes = minNodes;
     for (const [index, { clues, solution }] of puzzles[tier].entries()) {
       const result = solvePuzzle(clues, maxNodes);
@@ -36,13 +36,13 @@ for (const [tier, { clues: [minClues, maxClues], nodes: [minNodes, maxNodes] }] 
   });
 }
 
-test('all 90 11×11 levels have distinct clues and solutions', () => {
+test('all 90 9×9 levels have distinct clues and solutions', () => {
   const levels = Object.values(puzzles).flat();
   assert.equal(new Set(levels.map(({ clues }) => JSON.stringify(clues))).size, 90);
   assert.equal(new Set(levels.map(({ solution }) => [...solution].sort().join(','))).size, 90);
 });
 
-test('the browser game recognizes every supplied 11×11 answer as solved', () => {
+test('the browser game recognizes every supplied 9×9 answer as solved', () => {
   for (const [tier, levels] of Object.entries(puzzles)) {
     for (const [index, { clues, solution }] of levels.entries()) {
       const marks = Object.fromEntries(solution.map((edge) => [edge, 'line']));
