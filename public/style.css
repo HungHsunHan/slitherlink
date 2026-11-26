@@ -9,7 +9,6 @@
   --paper: #f7f5e6;
   --board: #fffbed;
   --ink: #213b3b;
-  --faint-ink: #536b69;
   --mint: #ccebb9;
   --focus: #79cda0;
   --line: #28794e;
@@ -130,13 +129,32 @@ button:focus-visible { outline: 2px solid var(--focus); outline-offset: 3px; }
   margin-bottom: 22px;
 }
 
-.board-size {
-  margin: 0 0 6px;
-  color: var(--faint-ink);
+.size-picker {
+  display: inline-flex;
+  gap: 4px;
+  margin-bottom: 6px;
+  padding: 3px;
+  border: 1px solid #ced5bf;
+  border-radius: 11px;
+  background: #eaeedc;
+}
+
+.size-picker button {
+  min-width: 56px;
+  min-height: 36px;
+  padding: 0 7px;
+  border: 1px solid transparent;
+  border-radius: 7px;
+  background: transparent;
+  color: #34584a;
   font-size: 0.84rem;
   font-weight: 650;
-  letter-spacing: 0.045em;
+  white-space: nowrap;
 }
+
+.size-picker button:hover { background: #dbe6cc; }
+.size-picker button[aria-pressed="true"] { background: #285748; color: #fffdf1; }
+.size-picker button:focus-visible { outline-color: #397557; outline-offset: 1px; }
 
 h1 {
   margin: 0;
@@ -173,6 +191,7 @@ h1 span { color: #689477; }
 }
 
 .board {
+  --edge-hit-size: clamp(16px, 5.9vw, 32px);
   position: relative;
   width: 100%;
   aspect-ratio: 1;
@@ -180,6 +199,14 @@ h1 span { color: #689477; }
   -webkit-tap-highlight-color: transparent;
   -webkit-touch-callout: none;
   user-select: none;
+}
+
+.board[data-size="11"] {
+  container-type: inline-size;
+  --edge-hit-size: min(28px, calc(75cqw / var(--unit, 11)));
+  --edge-line-width: clamp(3px, 1cqw, 5px);
+  --edge-line-highlight: 1px;
+  --edge-cross-size: clamp(8px, 3cqw, 12px);
 }
 
 .clue, .dot, .edge {
@@ -201,6 +228,7 @@ h1 span { color: #689477; }
 
 .clue[data-state="met"] { color: #627b54; }
 .clue[data-state="conflict"] { color: var(--red); font-weight: 750; }
+.board[data-size="11"] .clue { font-size: clamp(0.85rem, 4.7cqw, 1.6rem); }
 
 .dot {
   z-index: 2;
@@ -210,6 +238,8 @@ h1 span { color: #689477; }
   background: #344b45;
   pointer-events: none;
 }
+
+.board[data-size="11"] .dot { width: clamp(3px, 1.1cqw, 6px); }
 
 .edge {
   z-index: 1;
@@ -221,8 +251,8 @@ h1 span { color: #689477; }
   touch-action: manipulation;
 }
 
-.edge-h { width: calc(100% / 7); height: clamp(16px, 5.9vw, 32px); }
-.edge-v { width: clamp(16px, 5.9vw, 32px); height: calc(100% / 7); }
+.edge-h { width: calc(100% / var(--unit, 7)); height: var(--edge-hit-size); }
+.edge-v { width: var(--edge-hit-size); height: calc(100% / var(--unit, 7)); }
 
 .edge::before, .edge::after {
   content: "";
@@ -249,20 +279,20 @@ h1 span { color: #689477; }
   background: var(--line);
 }
 
-.edge-h[data-mark="line"]::before { height: 6px; }
-.edge-v[data-mark="line"]::before { width: 6px; }
+.edge-h[data-mark="line"]::before { height: var(--edge-line-width, 6px); }
+.edge-v[data-mark="line"]::before { width: var(--edge-line-width, 6px); }
 
 .edge[data-mark="line"]::after {
   border-radius: 5px;
   background: var(--line-light);
 }
 
-.edge-h[data-mark="line"]::after { width: 100%; height: 2px; }
-.edge-v[data-mark="line"]::after { width: 2px; height: 100%; }
+.edge-h[data-mark="line"]::after { width: 100%; height: var(--edge-line-highlight, 2px); }
+.edge-v[data-mark="line"]::after { width: var(--edge-line-highlight, 2px); height: 100%; }
 
 .edge[data-mark="cross"]::after {
-  width: 13px;
-  height: 13px;
+  width: var(--edge-cross-size, 13px);
+  height: var(--edge-cross-size, 13px);
   background:
     linear-gradient(45deg, transparent 44%, #586d63 46% 54%, transparent 56%),
     linear-gradient(-45deg, transparent 44%, #586d63 46% 54%, transparent 56%);
@@ -718,8 +748,10 @@ dialog button:focus-visible { outline-color: #397557; }
 
 .result-board .clue { font-size: clamp(0.72rem, 7.3cqw, 2rem); }
 .result-board .dot { width: clamp(3px, 1.55cqw, 7px); }
-.result-board .edge-h[data-mark="line"]::before { height: clamp(3px, 1.5cqw, 6px); }
-.result-board .edge-v[data-mark="line"]::before { width: clamp(3px, 1.5cqw, 6px); }
+.result-board .edge { min-height: 0; }
+.result-board .board { --edge-line-width: clamp(3px, 1.5cqw, 6px); }
+.result-board[data-size="11"] .board { --edge-line-width: clamp(2px, 1.05cqw, 5px); }
+.result-board[data-size="11"] .clue { font-size: clamp(0.56rem, 4.7cqw, 1.6rem); }
 
 .result-actions {
   display: flex;
@@ -831,7 +863,7 @@ dialog button:focus-visible { outline-color: #397557; }
   .game-layout { grid-template-columns: minmax(0, 1fr); gap: 11px; padding-bottom: 25px; }
   .paper { padding: 16px 13px 12px; border-radius: 16px; }
   .paper-heading { padding-inline: 2px; margin-bottom: 14px; }
-  .board-size { margin-bottom: 4px; }
+  .size-picker button { min-height: 40px; }
   .clock { min-width: 81px; min-height: 39px; padding-inline: 9px; font-size: 1rem; border-radius: 10px; }
   .board-frame { padding: 19px; border-radius: 10px; }
   .clue { font-size: clamp(1.15rem, 5.5vw, 1.95rem); }

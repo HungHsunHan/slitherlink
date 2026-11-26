@@ -1,17 +1,19 @@
 import { pickCharacters, pickSpecialReward } from './characters.mjs';
-import { puzzles } from './puzzles.mjs';
-import { EDGES, SIZE, inspectBoard } from './rules.mjs';
+import { puzzles as puzzles11 } from './puzzles-11.mjs';
+import { puzzles as puzzles7 } from './puzzles.mjs';
+import { SIZE, edgesFor, inspectBoard } from './rules.mjs';
 import { changeMark, completeAttempt, createAttempt, elapsedAt, formatTime, undoMark } from './session.mjs';
 
 const DIFFICULTIES = { easy: '簡單', medium: '中等', hard: '困難' };
 const WIN_CHARACTER_COUNTS = { easy: 1, medium: 2, hard: 3 };
-const STORAGE = 'slitherlink-7x7-v1';
+const PUZZLES_BY_SIZE = { [SIZE]: puzzles7, 11: puzzles11 };
+const SIZE_KEY = 'slitherlink/size';
 const ATTEMPT_BANKS = { medium: 'medium-v2', hard: 'hard-v2' };
 const STATE_NAMES = { line: '已畫線', cross: '已標記空邊', empty: '未標記' };
-const EDGES_BY_ID = new Map(EDGES.map((edge) => [edge.id, edge]));
 
 const get = (id) => document.getElementById(id);
 const board = get('board');
+const boardSize = get('board-size');
 const levels = get('levels');
 const clueTable = get('clue-table');
 const time = get('time');
@@ -23,17 +25,26 @@ const restart = get('restart');
 const answer = get('answer');
 const confirmDialog = get('confirm-dialog');
 const resultDialog = get('result-dialog');
+const resultBoard = get('result-board');
 const resultCharacters = get('result-characters');
 const resultButton = get('open-result');
+const sizeButtons = [...document.querySelectorAll('button[data-size]')];
 const difficultyButtons = [...document.querySelectorAll('[data-difficulty]')];
 const toolButtons = [...document.querySelectorAll('[data-tool]')];
 const edgeButtons = new Map();
+const edgesById = new Map();
 const edgePositions = new Map();
 const clueElements = [];
 const levelButtons = [];
 
-const levelKey = (mode, level) => `${STORAGE}/${ATTEMPT_BANKS[mode] ?? mode}/${level}`;
+const storageKey = (size) => `slitherlink-${size}x${size}-v1`;
+const sizeLabel = (size) => `${size} × ${size}`;
 const numberLabel = (index) => String(index + 1).padStart(2, '0');
+
+function levelKey(size, mode, level) {
+  const bank = size === SIZE ? ATTEMPT_BANKS[mode] ?? mode : mode;
+  return `${storageKey(size)}/${bank}/${level}`;
+}
 
 function read(key) {
   try {
@@ -51,8 +62,8 @@ function write(key, value) {
   }
 }
 
-function loadAttempt(mode, level) {
-  const saved = read(levelKey(mode, level));
+function loadAttempt(size, mode, level) {
+  const saved = read(levelKey(size, mode, level));
   if (
     !saved ||
     !Number.isFinite(saved.elapsedMs) ||
@@ -63,28 +74,44 @@ function loadAttempt(mode, level) {
   return saved;
 }
 
-const savedSelection = read(`${STORAGE}/selection`);
-let mode = Object.hasOwn(DIFFICULTIES, savedSelection?.mode) ? savedSelection.mode : 'easy';
-let level = Number.isInteger(savedSelection?.level) && puzzles[mode][savedSelection.level]
-  ? savedSelection.level
-  : 0;
-let attempt = loadAttempt(mode, level);
+function validLevel(size, mode, index) {
+  return Number.isInteger(index) && PUZZLES_BY_SIZE[size][mode][index] ? index : 0;
+}
+
+function loadSelection(size) {
+  const saved = read(`${storageKey(size)}/selection`);
+  const mode = Object.hasOwn(DIFFICULTIES, saved?.mode) ? saved.mode : 'easy';
+  return { mode, level: validLevel(size, mode, saved?.level) };
+}
+
+const savedSize = read(SIZE_KEY);
+let size = Number.isInteger(savedSize) && Object.hasOwn(PUZZLES_BY_SIZE, savedSize) ? savedSize : SIZE;
+let { mode, level } = loadSelection(size);
+let attempt = loadAttempt(size, mode, level);
 let tool = 'line';
 let showingAnswer = false;
 let startedAt = null;
 let pendingAction = null;
 
 function setPosition(element, column, row) {
-  element.style.setProperty('--x', `${column / SIZE * 100}%`);
-  element.style.setProperty('--y', `${row / SIZE * 100}%`);
+  element.style.setProperty('--x', `${column / size * 100}%`);
+  element.style.setProperty('--y', `${row / size * 100}%`);
 }
 
 function makeBoard() {
+  board.dataset.size = size;
+  board.style.setProperty('--unit', size);
+  board.setAttribute('aria-label', `${sizeLabel(size)} 數迴棋盤`);
+  boardSize.textContent = `${sizeLabel(size)} 棋盤`;
+  clueElements.length = 0;
+  edgeButtons.clear();
+  edgesById.clear();
+  edgePositions.clear();
   const elements = document.createDocumentFragment();
 
-  for (let row = 0; row < SIZE; row += 1) {
+  for (let row = 0; row < size; row += 1) {
     clueElements[row] = [];
-    for (let column = 0; column < SIZE; column += 1) {
+    for (let column = 0; column < size; column += 1) {
       const clue = document.createElement('span');
       clue.className = 'clue';
       clue.setAttribute('aria-hidden', 'true');
@@ -94,7 +121,7 @@ function makeBoard() {
     }
   }
 
-  for (const edge of EDGES) {
+  for (const edge of edgesFor(size)) {
     const horizontal = edge.orientation === 'h';
     const x = edge.col + (horizontal ? 0.5 : 0);
     const y = edge.row + (horizontal ? 0 : 0.5);
@@ -104,13 +131,14 @@ function makeBoard() {
     button.dataset.edge = edge.id;
     button.tabIndex = edgeButtons.size === 0 ? 0 : -1;
     setPosition(button, x, y);
+    edgesById.set(edge.id, edge);
     edgeButtons.set(edge.id, button);
     edgePositions.set(`${x * 2},${y * 2}`, button);
     elements.append(button);
   }
 
-  for (let row = 0; row <= SIZE; row += 1) {
-    for (let column = 0; column <= SIZE; column += 1) {
+  for (let row = 0; row <= size; row += 1) {
+    for (let column = 0; column <= size; column += 1) {
       const dot = document.createElement('span');
       dot.className = 'dot';
       dot.setAttribute('aria-hidden', 'true');
@@ -119,16 +147,16 @@ function makeBoard() {
     }
   }
 
-  board.append(elements);
+  board.replaceChildren(elements);
 }
 
 function makeLevels() {
-  for (let index = 0; index < puzzles.easy.length; index += 1) {
+  for (let index = 0; index < PUZZLES_BY_SIZE[size][mode].length; index += 1) {
     const button = document.createElement('button');
     button.type = 'button';
     button.textContent = numberLabel(index);
     button.addEventListener('click', () => {
-      selectLevel(mode, index);
+      selectLevel(size, mode, index);
       if (levelTitle.getBoundingClientRect().top < 0) {
         levelTitle.focus({ preventScroll: true });
         window.scrollTo(0, 0);
@@ -140,13 +168,13 @@ function makeLevels() {
 }
 
 function renderClues() {
-  const clues = puzzles[mode][level].clues;
+  const { clues } = PUZZLES_BY_SIZE[size][mode][level];
   const table = document.createDocumentFragment();
   const caption = document.createElement('caption');
   caption.textContent = '題目數字';
   table.append(caption);
   const header = document.createElement('thead').insertRow();
-  for (let column = 0; column <= SIZE; column += 1) {
+  for (let column = 0; column <= size; column += 1) {
     const cell = document.createElement('th');
     cell.scope = 'col';
     cell.textContent = column === 0 ? '列' : `第 ${column} 欄`;
@@ -170,20 +198,23 @@ function renderClues() {
 }
 
 function renderPicker() {
+  sizeButtons.forEach((button) => {
+    button.setAttribute('aria-pressed', String(Number(button.dataset.size) === size));
+  });
   difficultyButtons.forEach((button) => {
     button.setAttribute('aria-pressed', String(button.dataset.difficulty === mode));
   });
 
   let completed = 0;
   levelButtons.forEach((button, index) => {
-    const levelAttempt = index === level ? attempt : read(levelKey(mode, index));
+    const levelAttempt = index === level ? attempt : read(levelKey(size, mode, index));
     const done = Number.isFinite(levelAttempt?.bestMs);
     if (done) completed += 1;
     button.toggleAttribute('data-complete', done);
     button.setAttribute('aria-pressed', String(index === level));
     button.setAttribute('aria-label', `第 ${index + 1} 關${done ? '，已完成' : ''}`);
   });
-  get('completion').textContent = `${completed} / ${puzzles[mode].length} 完成`;
+  get('completion').textContent = `${completed} / ${PUZZLES_BY_SIZE[size][mode].length} 完成`;
 }
 
 function renderToolButtons() {
@@ -194,12 +225,12 @@ function renderToolButtons() {
 }
 
 function renderPlay() {
-  const puzzle = puzzles[mode][level];
+  const puzzle = PUZZLES_BY_SIZE[size][mode][level];
   const solution = showingAnswer ? new Set(puzzle.solution) : null;
   const { clueStates } = inspectBoard(puzzle.clues, attempt.marks);
   const locked = showingAnswer || attempt.phase === 'solved';
 
-  for (const edge of EDGES) {
+  for (const edge of edgesFor(size)) {
     const mark = (solution ? (solution.has(edge.id) ? 'line' : null) : attempt.marks[edge.id]) ?? 'empty';
     const button = edgeButtons.get(edge.id);
     button.dataset.mark = mark;
@@ -251,7 +282,7 @@ function syncClock() {
 }
 
 function saveAttempt() {
-  write(levelKey(mode, level), {
+  write(levelKey(size, mode, level), {
     ...attempt,
     elapsedMs: elapsedAt(attempt, startedAt, performance.now()),
   });
@@ -284,8 +315,9 @@ function showResult(celebrate = false) {
   snapshot.removeAttribute('id');
   snapshot.removeAttribute('aria-describedby');
   snapshot.inert = true;
-  get('result-board').replaceChildren(snapshot);
-  get('result-level').textContent = levelTitle.textContent;
+  resultBoard.dataset.size = size;
+  resultBoard.replaceChildren(snapshot);
+  get('result-level').textContent = `${sizeLabel(size)} · ${levelTitle.textContent}`;
   get('result-time').textContent = formatTime(attempt.elapsedMs);
   const reward = celebrate ? pickSpecialReward(mode, attempt.elapsedMs) : null;
   const characters = celebrate && !reward ? pickCharacters(WIN_CHARACTER_COUNTS[mode]) : [];
@@ -300,7 +332,8 @@ function showResult(celebrate = false) {
 }
 
 function updateAfterMove() {
-  const { solved } = inspectBoard(puzzles[mode][level].clues, attempt.marks);
+  const { clues } = PUZZLES_BY_SIZE[size][mode][level];
+  const { solved } = inspectBoard(clues, attempt.marks);
   if (solved) {
     pauseClock();
     completeAttempt(attempt);
@@ -328,17 +361,21 @@ function renderLevel() {
   renderPlay();
 }
 
-function selectLevel(nextMode, nextLevel) {
-  if (nextMode === mode && nextLevel === level) return;
+function selectLevel(nextSize, nextMode, nextLevel) {
+  const sizeChanged = nextSize !== size;
+  if (!sizeChanged && nextMode === mode && nextLevel === level) return;
   pauseClock();
   saveAttempt();
+  size = nextSize;
   mode = nextMode;
   level = nextLevel;
-  attempt = loadAttempt(mode, level);
+  attempt = loadAttempt(size, mode, level);
   showingAnswer = false;
   tool = 'line';
-  write(`${STORAGE}/selection`, { mode, level });
-  write(`${STORAGE}/last/${mode}`, level);
+  write(SIZE_KEY, size);
+  write(`${storageKey(size)}/selection`, { mode, level });
+  write(`${storageKey(size)}/last/${mode}`, level);
+  if (sizeChanged) makeBoard();
   renderLevel();
 }
 
@@ -391,7 +428,7 @@ board.addEventListener('keydown', (event) => {
   const direction = DIRECTIONS[event.key];
   if (!direction) return;
   event.preventDefault();
-  const { row, col, orientation } = EDGES_BY_ID.get(button.dataset.edge);
+  const { row, col, orientation } = edgesById.get(button.dataset.edge);
   const x = col * 2 + Number(orientation === 'h');
   const y = row * 2 + Number(orientation === 'v');
   const [dx, dy] = direction;
@@ -403,11 +440,20 @@ board.addEventListener('keydown', (event) => {
   next?.focus();
 });
 
+sizeButtons.forEach((button) => {
+  button.addEventListener('click', () => {
+    const next = Number(button.dataset.size);
+    if (next === size) return;
+    const { mode, level } = loadSelection(next);
+    selectLevel(next, mode, level);
+  });
+});
+
 difficultyButtons.forEach((button) => {
   button.addEventListener('click', () => {
     const next = button.dataset.difficulty;
-    const recent = read(`${STORAGE}/last/${next}`);
-    selectLevel(next, Number.isInteger(recent) && puzzles[next][recent] ? recent : 0);
+    const recent = read(`${storageKey(size)}/last/${next}`);
+    selectLevel(size, next, validLevel(size, next, recent));
   });
 });
 

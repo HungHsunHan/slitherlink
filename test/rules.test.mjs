@@ -1,9 +1,9 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { EDGES, SIZE, inspectBoard } from '../public/rules.mjs';
+import { EDGES, SIZE, edgesFor, inspectBoard } from '../public/rules.mjs';
 
-function blankClues() {
-  return Array.from({ length: SIZE }, () => Array(SIZE).fill(null));
+function blankClues(size = SIZE) {
+  return Array.from({ length: size }, () => Array(size).fill(null));
 }
 
 function cellLoop(row, col) {
@@ -21,6 +21,24 @@ test('7×7 的棋盤有 112 條唯一邊，包含底部和右側外框', () => {
   assert.equal(EDGES.length, 112);
   assert.ok(EDGES.some(({ id }) => id === 'h-7-6'));
   assert.ok(EDGES.some(({ id }) => id === 'v-6-7'));
+});
+
+test('11×11 的棋盤有 264 條唯一邊，包含底部和右側外框', () => {
+  const ids = new Set(edgesFor(11).map(({ id }) => id));
+  assert.equal(ids.size, 264);
+  assert.ok(ids.has('h-11-10'));
+  assert.ok(ids.has('v-10-11'));
+});
+
+test('11×11 接受最右下角符合線索的閉環', () => {
+  const clues = blankClues(11);
+  clues[9][10] = 1;
+  clues[10][9] = 1;
+  assert.ok(inspectBoard(clues, cellLoop(10, 10)).solved);
+});
+
+test('11×11 拒絕原範圍外另一個分離的閉環', () => {
+  assert.equal(inspectBoard(blankClues(11), { ...cellLoop(0, 0), ...cellLoop(10, 10) }).solved, false);
 });
 
 test('空白或開放的線段都不構成閉環', () => {

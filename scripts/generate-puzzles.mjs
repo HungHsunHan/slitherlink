@@ -1,17 +1,50 @@
 import { writeFile } from 'node:fs/promises';
-import { cellEdges, edgeIds, inspectLines, size, solvePuzzle } from './puzzle-solver.mjs';
+import { createPuzzleSolver } from './puzzle-solver.mjs';
 
-const difficulties = {
-  easy: { seed: 0x61ce408d, minClues: 31, maxClues: 35, minNodes: 1, maxNodes: 12 },
-  medium: {
-    seed: 0x099f7999, minClues: 24, maxClues: 26, minNodes: 80, maxNodes: 300,
-    areaRange: [33, 35], minZeros: 2, maxZeros: 4,
+const banks = {
+  7: {
+    file: 'puzzles.mjs', refinements: 35, perimeterRange: [28, 54], minSpan: 6,
+    difficulties: {
+      easy: {
+        seed: 0x61ce408d, minClues: 31, maxClues: 35, minNodes: 1, maxNodes: 12,
+        areaRange: [13, 40], targetAreaRange: [15, 37],
+      },
+      medium: {
+        seed: 0x099f7999, minClues: 24, maxClues: 26, minNodes: 80, maxNodes: 300,
+        areaRange: [33, 35], minZeros: 2, maxZeros: 4,
+      },
+      hard: {
+        seed: 0x142685c2, minClues: 26, maxClues: 29, minNodes: 501, maxNodes: 2500,
+        areaRange: [36, 42], maxZeros: 0,
+      },
+    },
   },
-  hard: {
-    seed: 0x142685c2, minClues: 26, maxClues: 29, minNodes: 501, maxNodes: 2500,
-    areaRange: [36, 42], maxZeros: 0,
+  11: {
+    file: 'puzzles-11.mjs', refinements: 85, perimeterRange: [55, 124], minSpan: 10,
+    difficulties: {
+      easy: {
+        seed: 0xb63886a2, minClues: 78, maxClues: 88, minNodes: 1, maxNodes: 30,
+        areaRange: [46, 70],
+      },
+      medium: {
+        seed: 0xd470b547, minClues: 62, maxClues: 76, minNodes: 31, maxNodes: 300,
+        areaRange: [71, 82], minZeros: 3, maxZeros: 8,
+      },
+      hard: {
+        seed: 0x802a6bb6, minClues: 62, maxClues: 76, minNodes: 301, maxNodes: 1800,
+        areaRange: [83, 98], maxZeros: 0,
+      },
+    },
   },
 };
+
+const [, , sizeArgument = '7', ...extraArgs] = process.argv;
+if (extraArgs.length || !Object.hasOwn(banks, sizeArgument)) {
+  throw new Error('Usage: node scripts/generate-puzzles.mjs [7|11]');
+}
+const size = Number(sizeArgument);
+const { file, refinements, perimeterRange, minSpan, difficulties } = banks[size];
+const { cellEdges, edgeIds, inspectLines, solvePuzzle } = createPuzzleSolver(size);
 const allCells = Array.from({ length: size * size }, (_, index) => index);
 const positions = allCells.map((index) => [Math.floor(index / size), index % size]);
 const neighbors = positions.map(([row, column]) => [
@@ -44,9 +77,9 @@ function hasOneBoundary(edges) {
   return components === 1 && cycles === 1;
 }
 
-function createBoundary(areaRange) {
-  const [minArea, maxArea] = areaRange ?? [13, 40];
-  const [minTarget, maxTarget] = areaRange ?? [15, 37];
+function createBoundary({ areaRange, targetAreaRange = areaRange }) {
+  const [minArea, maxArea] = areaRange;
+  const [minTarget, maxTarget] = targetAreaRange;
   const edges = new Uint8Array(edgeIds.length);
   const region = new Uint8Array(allCells.length);
   toggleCell(region, edges, pickIndex(allCells.length));
@@ -65,7 +98,7 @@ function createBoundary(areaRange) {
     area++;
   }
 
-  for (let index = 0; index < 35; index++) {
+  for (let index = 0; index < refinements; index++) {
     const cell = pickIndex(allCells.length);
     const areaAfter = area + (region[cell] ? -1 : 1);
     if (areaAfter < minArea || areaAfter > maxArea) continue;
@@ -76,11 +109,12 @@ function createBoundary(areaRange) {
   }
 
   const perimeter = edges.reduce((sum, value) => sum + value, 0);
-  if (perimeter < 28 || perimeter > 54) return null;
+  const [minPerimeter, maxPerimeter] = perimeterRange;
+  if (perimeter < minPerimeter || perimeter > maxPerimeter) return null;
   const occupied = positions.filter((_, index) => region[index]);
   for (const axis of [0, 1]) {
     const coordinates = occupied.map((cell) => cell[axis]);
-    if (Math.max(...coordinates) - Math.min(...coordinates) < 5) return null;
+    if (Math.max(...coordinates) - Math.min(...coordinates) + 1 < minSpan) return null;
   }
   return { region, edges };
 }
@@ -161,7 +195,7 @@ for (const [name, difficulty] of Object.entries(difficulties)) {
   seed = difficulty.seed;
   const levels = [];
   for (let attempt = 0; levels.length < 30 && attempt < 3000; attempt++) {
-    const boundary = createBoundary(difficulty.areaRange);
+    const boundary = createBoundary(difficulty);
     if (!boundary) continue;
     const key = symmetricKey(boundary.region);
     if (seenBoundaries.has(key)) continue;
@@ -177,4 +211,4 @@ for (const [name, difficulty] of Object.entries(difficulties)) {
   source.push(`  ${name}: [`, ...levels.map(writeLevel), '  ],');
 }
 source.push('};', '');
-await writeFile(new URL('../public/puzzles.mjs', import.meta.url), source.join('\n'));
+await writeFile(new URL(`../public/${file}`, import.meta.url), source.join('\n'));
